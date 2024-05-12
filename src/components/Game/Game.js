@@ -8,17 +8,16 @@ import { NUM_OF_GUESSES_ALLOWED, WORD_LENGTH } from "../../constants";
 import { checkGuess, initialState } from "../../game-helpers";
 import { LossBanner, WinBanner } from "../GameOver";
 
-// Pick a random word on every pageload.
-const answer = sample(WORDS);
-
-// To make debugging easier, we'll log the solution in the console.
-console.info("answer: %s", answer);
-
 const GAME_IN_PROGRESS = 0;
 const GAME_WON = 1;
 const GAME_LOST = 2;
 
 function Game() {
+  const [answer, setAnswer] = useState(() => {
+    const nextAnswer = sample(WORDS);
+    console.info("answer: %s", nextAnswer);
+    return nextAnswer;
+  });
   const [guesses, setGuesses] = useState(initialState);
   const [counter, setCounter] = useState(0);
   const [gameStatus, setGameStatus] = useState(GAME_IN_PROGRESS);
@@ -59,6 +58,13 @@ function Game() {
     }
   }
 
+  function restartGame() {
+    setGuesses(initialState);
+    setCounter(0);
+    setGameStatus(GAME_IN_PROGRESS);
+    setAnswer(sample(WORDS));
+  }
+
   return (
     <>
       <GuessResults guesses={guesses} />
@@ -66,8 +72,12 @@ function Game() {
         onSubmit={onGuessSubmit}
         disabled={gameStatus !== GAME_IN_PROGRESS}
       />
-      {gameStatus === GAME_WON && <WinBanner numOfGuesses={counter} />}
-      {gameStatus === GAME_LOST && <LossBanner answer={answer} />}
+      {gameStatus === GAME_WON && (
+        <WinBanner numOfGuesses={counter} onRestartClick={restartGame} />
+      )}
+      {gameStatus === GAME_LOST && (
+        <LossBanner answer={answer} onRestartClick={restartGame} />
+      )}
     </>
   );
 }
