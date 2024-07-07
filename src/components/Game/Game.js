@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 
-import Input from "../Input";
 import GuessResults from "../GuessResults";
+import Input from "../Input";
+import Keyboard from "../Keyboard";
 import { sample } from "../../utils";
 import { WORDS } from "../../data";
 import { NUM_OF_GUESSES_ALLOWED, WORD_LENGTH } from "../../constants";
@@ -20,6 +21,7 @@ function Game() {
   });
   const [guesses, setGuesses] = useState(initialState);
   const [counter, setCounter] = useState(0);
+  const [letterMap, setLetterMap] = useState(new Map());
   const [gameStatus, setGameStatus] = useState(GAME_IN_PROGRESS);
 
   function onGuessSubmit(word) {
@@ -47,6 +49,12 @@ function Game() {
     const nextCounter = counter + 1;
     setCounter(nextCounter);
 
+    const nextLetterMap = new Map(letterMap);
+    letters.forEach((letter) => {
+      nextLetterMap.set(letter.letter, letter.status);
+    });
+    setLetterMap(nextLetterMap);
+
     if (word === answer) {
       setGameStatus(GAME_WON);
       return;
@@ -63,6 +71,7 @@ function Game() {
     setCounter(0);
     setGameStatus(GAME_IN_PROGRESS);
     setAnswer(sample(WORDS));
+    setLetterMap(new Map());
   }
 
   return (
@@ -72,6 +81,7 @@ function Game() {
         onSubmit={onGuessSubmit}
         disabled={gameStatus !== GAME_IN_PROGRESS}
       />
+      <Keyboard letterMap={letterMap} />
       {gameStatus === GAME_WON && (
         <WinBanner numOfGuesses={counter} onRestartClick={restartGame} />
       )}
